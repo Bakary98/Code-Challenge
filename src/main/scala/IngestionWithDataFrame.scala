@@ -5,7 +5,7 @@ import org.apache.spark.sql.catalyst.csv.CSVInferSchema
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
-object IngestionWithDataFrame {
+object IngestionWithDataFrame  extends App{
 
 
     /** Our main function where the action happens */
@@ -31,22 +31,26 @@ object IngestionWithDataFrame {
       val sales  = dataFrameRead("data/sales.csv", ";","true","true")
       val songs  = dataFrameRead("data/songs.csv", ";","true","true")
 
-      /*val albums = spark.read.options(Map("header"->"true", "delimiter"->";", "inferSchema"->"true")).csv("data/albums.csv")
-      val sales = spark.read.options(Map("header"->"true", "delimiter"->";", "inferSchema"->"true")).csv("data/sales.csv")
-      val songs = spark.read.options(Map("header"->"true", "delimiter"->";", "inferSchema"->"true")).csv("data/songs.csv")
-      */
+      // Joins all dataframes of albums, songs and sales to obtain data
 
+      def joinDf(df1:DataFrame,df2: DataFrame,col1: Column, col2: Column,col3: Column, col4:Column): DataFrame= {
+        df1.join(df2,col1 === col2 && col3 === col4)
+      }
+      val data1= joinDf(sales,songs,sales("TRACK_ISRC_CODE"),songs("isrc"),sales("TRACK_ID"),songs("song_id") )
+      val dataFinal = joinDf(data1,albums,sales("PRODUCT_UPC"),albums("upc"),sales("TERRITORY"),albums("country") )
 
       // Joins all dataframes of albums, songs and sales to obtain data
 
-      val data = sales.join(songs, sales("TRACK_ISRC_CODE") === songs("isrc") &&
+     /* val data = sales.join(songs, sales("TRACK_ISRC_CODE") === songs("isrc") &&
                                 sales("TRACK_ID") === songs("song_id"), "inner")
                       .join(albums,sales("PRODUCT_UPC")=== albums("upc") &&
                           sales("TERRITORY") === albums("country"))
 
+      */
+
       // Cast net_total , song_id and upc columns and Renamed net_total and country columns
 
-      val finalDf= data.select("upc","isrc","label_name","album_name","song_id","song_name","artist_name","content_type","net_total","country")
+      val finalDf= dataFinal.select("upc","isrc","label_name","album_name","song_id","song_name","artist_name","content_type","net_total","country")
 
                              .withColumn("net_total",col("net_total").cast(DoubleType))
                              .withColumn("song_id",col("song_id").cast(LongType))
