@@ -22,14 +22,37 @@ object IngestionWithDataFrame extends App  {
         .getOrCreate()
 
       // Function uses to read the data
-      def dataFrameReadCsv (path: String, delimiter: String,header:String,inferSchema: String): DataFrame = {
+      val albumsSchema = new StructType()
+        .add("upc", StringType, nullable = true)
+        .add("album_name", StringType, nullable = true)
+        .add("label_name", StringType, nullable = true)
+        .add("country", StringType, nullable = true)
 
-        spark.read.options(Map("header"->header, "delimiter"->delimiter, "inferSchema"->inferSchema)).csv(path)
+      val salesSchema = new StructType()
+        .add("PRODUCT_UPC", StringType, nullable = true)
+        .add("TRACK_ISRC_CODE", StringType, nullable = true)
+        .add("TRACK_ID", StringType, nullable = true)
+        .add("DELIVERY", StringType, nullable = true)
+        .add("NET_TOTAL", DoubleType, nullable = true)
+        .add("TERRITORY", StringType, nullable = true)
+
+      val songsSchema = new StructType()
+        .add("isrc", StringType, nullable = true)
+        .add("song_id", LongType, nullable = true)
+        .add("song_name", StringType, nullable = true)
+        .add("artist_name", StringType, nullable = true)
+        .add("content_type", DoubleType, nullable = true)
+      def dataFrameReadCsv (path: String, delimiter: String,header:String, schema: StructType): DataFrame = {
+
+        spark.read.options(Map("header"->header, "delimiter"->delimiter)).schema(schema).csv(path)
       }
       // Read albums, sales and songs csv files
-      val albums = dataFrameReadCsv("data/albums.csv", ";","true","true")
-      val sales  = dataFrameReadCsv("data/sales.csv", ";","true","true")
-      val songs  = dataFrameReadCsv("data/songs.csv", ";","true","true")
+      val albums = dataFrameReadCsv("data/albums.csv", ";","true",albumsSchema)
+      val sales  = dataFrameReadCsv("data/sales.csv", ";","true",salesSchema)
+      val songs  = dataFrameReadCsv("data/songs.csv", ";","true",songsSchema)
+      //albums.printSchema()
+      //sales.printSchema()
+      //songs.printSchema()
 
       // Joins all dataframes of albums, songs and sales to obtain data
 
@@ -52,9 +75,6 @@ object IngestionWithDataFrame extends App  {
 
       val finalDf= dataFinal.select("upc","isrc","label_name","album_name","song_id","song_name","artist_name","content_type","net_total","country")
 
-                             .withColumn("net_total",col("net_total").cast(DoubleType))
-                             .withColumn("song_id",col("song_id").cast(LongType))
-                             .withColumn("upc",col("upc").cast(StringType))
                              .withColumnRenamed("net_total", "total_net_revenue")
                              .withColumnRenamed("country","sales_country")
 
