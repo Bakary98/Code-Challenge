@@ -47,29 +47,20 @@ object IngestionWithDataFrame extends App  {
         spark.read.options(Map("header"->header, "delimiter"->delimiter)).schema(schema).csv(path)
       }
       // Read albums, sales and songs csv files
-      val albums = dataFrameReadCsv("data/albums.csv", ";","true",albumsSchema)
-      val sales  = dataFrameReadCsv("data/sales.csv", ";","true",salesSchema)
-      val songs  = dataFrameReadCsv("data/songs.csv", ";","true",songsSchema)
-      //albums.printSchema()
-      //sales.printSchema()
-      //songs.printSchema()
+      val albums = dataFrameReadCsv("data/input/albums.csv", ";","true",albumsSchema)
+      val sales  = dataFrameReadCsv("data/input/sales.csv", ";","true",salesSchema)
+      val songs  = dataFrameReadCsv("data/input/songs.csv", ";","true",songsSchema)
 
       // Joins all dataframes of albums, songs and sales to obtain data
 
       def joinDf(df1:DataFrame,df2: DataFrame,col1: Column, col2: Column,col3: Column, col4:Column): DataFrame= {
         df1.join(df2,col1 === col2 && col3 === col4)
       }
+
       val data1= joinDf(sales,songs,sales("TRACK_ISRC_CODE"),songs("isrc"),sales("TRACK_ID"),songs("song_id") )
       val dataFinal = joinDf(data1,albums,sales("PRODUCT_UPC"),albums("upc"),sales("TERRITORY"),albums("country") )
 
-      // Joins all dataframes of albums, songs and sales to obtain data
 
-     /* val data = sales.join(songs, sales("TRACK_ISRC_CODE") === songs("isrc") &&
-                                sales("TRACK_ID") === songs("song_id"), "inner")
-                      .join(albums,sales("PRODUCT_UPC")=== albums("upc") &&
-                          sales("TERRITORY") === albums("country"))
-
-      */
 
       // Cast net_total , song_id and upc columns and Renamed net_total and country columns
 
@@ -77,7 +68,7 @@ object IngestionWithDataFrame extends App  {
 
                              .withColumnRenamed("net_total", "total_net_revenue")
                              .withColumnRenamed("country","sales_country")
-
+      finalDf.printSchema()
       // Check if we obtain the line we have in pdf challenge
       finalDf.filter(finalDf("upc") === "5016958061173").show(false)
 
@@ -87,9 +78,6 @@ object IngestionWithDataFrame extends App  {
         .option("mode", "OVERWRITE")
         .option("path", "data/output")
         .save()
-
-
-
 
 
 
