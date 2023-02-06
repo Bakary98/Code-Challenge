@@ -5,11 +5,11 @@ import org.apache.spark.sql.catalyst.csv.CSVInferSchema
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
-object IngestionWithDataFrame  {
+object IngestionWithDataFrame extends App  {
 
 
     /** Our main function where the action happens */
-    def main(args: Array[String]) {
+
       // Set the log level to only print errors
       Logger.getLogger("org").setLevel(Level.ERROR)
 
@@ -22,14 +22,14 @@ object IngestionWithDataFrame  {
         .getOrCreate()
 
       // Function uses to read the data
-      def dataFrameRead (path: String, delimiter: String,header:String,inferSchema: String): DataFrame = {
+      def dataFrameReadCsv (path: String, delimiter: String,header:String,inferSchema: String): DataFrame = {
 
         spark.read.options(Map("header"->header, "delimiter"->delimiter, "inferSchema"->inferSchema)).csv(path)
       }
       // Read albums, sales and songs csv files
-      val albums = dataFrameRead("data/albums.csv", ";","true","true")
-      val sales  = dataFrameRead("data/sales.csv", ";","true","true")
-      val songs  = dataFrameRead("data/songs.csv", ";","true","true")
+      val albums = dataFrameReadCsv("data/albums.csv", ";","true","true")
+      val sales  = dataFrameReadCsv("data/sales.csv", ";","true","true")
+      val songs  = dataFrameReadCsv("data/songs.csv", ";","true","true")
 
       // Joins all dataframes of albums, songs and sales to obtain data
 
@@ -70,7 +70,7 @@ object IngestionWithDataFrame  {
 
 
 
-    }
+
 
 
 }
