@@ -1,6 +1,5 @@
 
 import IngestionWithDataFrame.dataFrameRead
-
 import org.scalatest.funsuite.AnyFunSuite
 
 class DataIngestionTest extends AnyFunSuite with SparkSessionTest with DataFrameTestUtils {

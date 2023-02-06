@@ -5,7 +5,7 @@ import org.apache.spark.sql.catalyst.csv.CSVInferSchema
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
-object IngestionWithDataFrame  extends App{
+object IngestionWithDataFrame  {
 
 
     /** Our main function where the action happens */
