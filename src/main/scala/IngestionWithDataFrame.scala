@@ -1,8 +1,6 @@
 
 import org.apache.spark.sql._
 import org.apache.log4j._
-import org.apache.spark.sql.catalyst.csv.CSVInferSchema
-import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 object IngestionWithDataFrame extends App  {
@@ -18,7 +16,6 @@ object IngestionWithDataFrame extends App  {
         .builder
         .appName("Ingestion")
         .master("local[*]")
-        .config("spark.sql.warehouse.dir", "file:///C:/temp") // Necessary to work around a Windows bug in Spark 2.0.0; omit if you're not on Windows.
         .getOrCreate()
 
       // Function uses to read the data
@@ -41,7 +38,7 @@ object IngestionWithDataFrame extends App  {
         .add("song_id", LongType, nullable = true)
         .add("song_name", StringType, nullable = true)
         .add("artist_name", StringType, nullable = true)
-        .add("content_type", DoubleType, nullable = true)
+        .add("content_type", StringType, nullable = true)
       def dataFrameReadCsv (path: String, delimiter: String,header:String, schema: StructType): DataFrame = {
 
         spark.read.options(Map("header"->header, "delimiter"->delimiter)).schema(schema).csv(path)
