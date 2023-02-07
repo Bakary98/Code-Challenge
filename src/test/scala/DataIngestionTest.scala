@@ -10,7 +10,7 @@ class DataIngestionTest extends AnyFunSuite with SparkSessionTest with DataFrame
   import spark.implicits._
 
 
-  test("Join Test Functionality") {
+  test("Join Schema Test Functionality") {
 
     val sourceDf1 = Seq(
       ("Adore", "Shaddock", "19981217-73959"),
